@@ -19,15 +19,21 @@ stages:
 
     # ✅ Install Terraform
 
+
     - script: |
-        wget https://releases.hashicorp.com/terraform/1.5.0/terraform_1.5.0_linux_amd64.zip
-        unzip -o terraform_1.5.0_linux_amd64.zip
-        chmod +x terraform
-        mkdir -p /tmp/tfbin
-        mv terraform /tmp/tfbin/
-        export PATH=/tmp/tfbin:$PATH
-        terraform -version
+          echo "Download terraform..."
+          wget https://releases.hashicorp.com/terraform/1.5.0/terraform_1.5.0_linux_amd64.zip -O /tmp/terraform.zip
+
+          echo "Extracting..."
+          mkdir -p /tmp/terraform-bin
+          unzip -o /tmp/terraform.zip -d /tmp/terraform-bin
+
+          chmod +x /tmp/terraform-bin/terraform
+
+          echo "Verify Terraform"
+          /tmp/terraform-bin/terraform -version
       displayName: "Install Terraform"
+
 
     # ✅ Azure Login
     - task: AzureCLI@2
