@@ -5,7 +5,6 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  terraformVersion: '1.5.0'
   workingDir: terraform
 
 stages:
@@ -17,59 +16,38 @@ stages:
     displayName: "Run Terraform"
     steps:
 
-    # ✅ Install Terraform
-
-
+    # ✅ Install Terraform (safe method)
     - script: |
-          echo "Download terraform..."
-          wget https://releases.hashicorp.com/terraform/1.5.0/terraform_1.5.0_linux_amd64.zip -O /tmp/terraform.zip
+        echo "Downloading Terraform..."
+        wget https://releases.hashicorp.com/terraform/1.5.0/terraform_1.5.0_linux_amd64.zip -O /tmp/terraform.zip
 
-          echo "Extracting..."
-          mkdir -p /tmp/terraform-bin
-          unzip -o /tmp/terraform.zip -d /tmp/terraform-bin
+        echo "Extracting Terraform..."
+        mkdir -p /tmp/terraform-bin
+        unzip -o /tmp/terraform.zip -d /tmp/terraform-bin
 
-          chmod +x /tmp/terraform-bin/terraform
+        chmod +x /tmp/terraform-bin/terraform
 
-          echo "Verify Terraform"
-          /tmp/terraform-bin/terraform -version
+        echo "Terraform version:"
+        /tmp/terraform-bin/terraform -version
       displayName: "Install Terraform"
 
-
-    # ✅ Azure Login
+    # ✅ Run Terraform inside AzureCLI (this solves auth issue)
     - task: AzureCLI@2
+      displayName: "Run Terraform (Init + Plan + Apply)"
       inputs:
         azureSubscription: 'AZURE-SERVICE-CONNECTION'
         scriptType: bash
         scriptLocation: inlineScript
         inlineScript: |
-          echo "Logged into Azure"
-          
-          echo "##vso[task.setvariable variable=servicePrincipalId]$servicePrincipalId"
-          echo "##vso[task.setvariable variable=servicePrincipalKey]$servicePrincipalKey"
-          echo "##vso[task.setvariable variable=subscriptionId]$subscriptionId"
-          echo "##vso[task.setvariable variable=tenantId]$tenantId"
 
+          echo "Switching to Terraform directory..."
+          cd $(workingDir)
 
-    # ✅ Init (uses your backend.tf automatically)
-    - script: |
-        /tmp/terraform-bin/terraform init
-      workingDirectory: $(workingDir)
-      displayName: "Terraform Init"      
-      env:
-        ARM_CLIENT_ID: $(servicePrincipalId)
-        ARM_CLIENT_SECRET: $(servicePrincipalKey)
-        ARM_SUBSCRIPTION_ID: $(subscriptionId)
-        ARM_TENANT_ID: $(tenantId)
+          echo "Running Terraform Init..."
+          /tmp/terraform-bin/terraform init
 
+          echo "Running Terraform Plan..."
+          /tmp/terraform-bin/terraform plan -out=tfplan
 
-    # ✅ Plan
-    - script: |
-        /tmp/terraform-bin/terraform plan -out=tfplan
-      workingDirectory: $(workingDir)
-      displayName: "Terraform Plan"
-
-    # ✅ Apply
-    - script: |
-        terraform apply -auto-approve tfplan
-      workingDirectory: $(workingDir)
-      displayName: "Terraform Apply" 
+          echo "Running Terraform Apply..."
+          /tmp/terraform-bin/terraform apply -auto-approve tfplan
