@@ -13,3 +13,12 @@ variable "aks_cluster_name" {
 variable "acr_name" {
   default = "aksdemoregistrygreen231"
 }
+
+variable "storage_account_name" {
+  default = "project1green231"
+}
+
+variable "container_name" {
+  default = "tfstate_container"
+}
+

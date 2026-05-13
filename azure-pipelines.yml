@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Docker
 # Build a Docker image
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
@@ -27,3 +28,56 @@ stages:
         dockerfile: '$(Build.SourcesDirectory)/services/user-service/Dockerfile'
         tags: |
           $(tag)
+=======
+trigger:
+  - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  acrName: aksdemoregistrygreen231
+  imageName: user-service
+  tag: $(Build.BuildId)
+  resourceGroup: project_rg
+  aksCluster: aks-demo-cluster
+
+stages:
+
+# ✅ Build & Push Docker Image
+- stage: Build
+  jobs:
+    - job: BuildImage
+      steps:
+
+        - task: Docker@2
+          displayName: Build and Push Image
+          inputs:
+            containerRegistry: 'ACR-SERVICE-CONNECTION'
+            repository: $(imageName)
+            command: buildAndPush
+            Dockerfile: services/user-service/Dockerfile
+            tags: |
+              $(tag)
+
+# ✅ Deploy to AKS
+- stage: Deploy
+  dependsOn: Build
+  jobs:
+    - job: DeployToAKS
+      steps:
+
+        - task: Kubernetes@1
+          inputs:
+            connectionType: 'Azure Resource Manager'
+            azureSubscriptionEndpoint: 'AZURE-SERVICE-CONNECTION'
+            azureResourceGroup: $(resourceGroup)
+            kubernetesCluster: $(aksCluster)
+            command: login
+
+        - script: |
+            helm upgrade --install user-service ./helm/user-service \
+              --set image.repository=$(acrName).azurecr.io/user-service \
+              --set image.tag=$(tag)
+          displayName: Deploy via Helm
+>>>>>>> e8248d9 (Remove terraform state from repo)
