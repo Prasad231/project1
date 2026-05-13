@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # Docker
 # Build a Docker image
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
@@ -28,7 +28,7 @@ stages:
         dockerfile: '$(Build.SourcesDirectory)/services/user-service/Dockerfile'
         tags: |
           $(tag)
-=======
+
 trigger:
   - main
 
@@ -80,4 +80,4 @@ stages:
               --set image.repository=$(acrName).azurecr.io/user-service \
               --set image.tag=$(tag)
           displayName: Deploy via Helm
->>>>>>> e8248d9 (Remove terraform state from repo)
+
