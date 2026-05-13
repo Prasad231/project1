@@ -51,4 +51,4 @@ stages:
     - script: |
         terraform apply -auto-approve tfplan
       workingDirectory: $(workingDir)
-      displayName: "Terraform Apply"
+      displayName: "Terraform Apply" 
