@@ -1,0 +1,38 @@
+replicaCount: 2
+
+image:
+  repository: aksdemoregistrygreen231.azurecr.io/user-service
+  tag: v2
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "500m"
+    memory: "256Mi"
+
+livenessProbe:
+  path: /health
+  port: 8000
+
+readinessProbe:
+  path: /health
+  port: 8000
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 8000
