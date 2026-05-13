@@ -46,13 +46,13 @@ stages:
 
     # ✅ Init (uses your backend.tf automatically)
     - script: |
-        terraform init
+        /tmp/terraform-bin/terraform init
       workingDirectory: $(workingDir)
       displayName: "Terraform Init"
 
     # ✅ Plan
     - script: |
-        terraform plan -out=tfplan
+        /tmp/terraform-bin/terraform plan -out=tfplan
       workingDirectory: $(workingDir)
       displayName: "Terraform Plan"
 
