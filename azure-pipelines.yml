@@ -39,15 +39,14 @@ stages:
         scriptType: bash
         scriptLocation: inlineScript
         inlineScript: |
+         echo "Switching to Terraform directory..."
+         cd $(workingDir)
 
-          echo "Switching to Terraform directory..."
-          cd $(workingDir)
+         echo "Running Terraform Init..."
+         /tmp/terraform-bin/terraform init
 
-          echo "Running Terraform Init..."
-          /tmp/terraform-bin/terraform init
+         echo "Running Terraform Plan..."
+         /tmp/terraform-bin/terraform plan -out=tfplan
 
-          echo "Running Terraform Plan..."
-          /tmp/terraform-bin/terraform plan -out=tfplan
-
-          echo "Running Terraform Apply..."
-          /tmp/terraform-bin/terraform apply -auto-approve tfplan
+         echo "Running Terraform Apply..."
+         /tmp/terraform-bin/terraform apply -auto-approve tfplan
