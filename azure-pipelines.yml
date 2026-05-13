@@ -39,14 +39,21 @@ stages:
         scriptType: bash
         scriptLocation: inlineScript
         inlineScript: |
-         echo "Switching to Terraform directory..."
-         cd $(workingDir)
+          echo "Switching to Terraform directory..."
+          cd $(workingDir)
 
-         echo "Running Terraform Init..."
-         /tmp/terraform-bin/terraform init
+          echo "Setting Terraform Service Principal authentication..."
 
-         echo "Running Terraform Plan..."
-         /tmp/terraform-bin/terraform plan -out=tfplan
+          export ARM_CLIENT_ID=$servicePrincipalId
+          export ARM_CLIENT_SECRET=$servicePrincipalKey
+          export ARM_TENANT_ID=$tenantId
+          export ARM_SUBSCRIPTION_ID=$(az account show --query id -o tsv)
 
-         echo "Running Terraform Apply..."
-         /tmp/terraform-bin/terraform apply -auto-approve tfplan
+          echo "Running Terraform Init..."
+          /tmp/terraform-bin/terraform init
+
+          echo "Running Terraform Plan..."
+          /tmp/terraform-bin/terraform plan -out=tfplan
+
+          echo "Running Terraform Apply..."
+          /tmp/terraform-bin/terraform apply -auto-approve tfplan
