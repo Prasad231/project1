@@ -3,7 +3,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   dns_prefix          = "aksdemo"
-
+  oidc_issuer_enabled = true
   default_node_pool {
     name       = "system"
     node_count = 2
