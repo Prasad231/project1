@@ -38,6 +38,7 @@ stages:
         azureSubscription: 'AZURE-SERVICE-CONNECTION'
         scriptType: bash
         scriptLocation: inlineScript
+        addSpnToEnvironment: true
         inlineScript: |
           echo "Switching to Terraform directory..."
           cd $(workingDir)
