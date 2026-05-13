@@ -58,3 +58,6 @@ stages:
 
           echo "Running Terraform Apply..."
           /tmp/terraform-bin/terraform apply -auto-approve tfplan
+
+        # echo "Running Terraform Apply..."
+        # /tmp/terraform-bin/terraform destroy -auto-approve tfplan
