@@ -3,14 +3,19 @@
 # Build a Docker image
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
-trigger:
-- main
+trigger: none
+pr: none
 
 resources:
 - repo: self
 
 variables:
-  tag: '$(Build.BuildId)'
+  
+  acrName: aksdemoregistrygreen231
+  imageName: user-service
+  tag: $(Build.BuildId)
+  resourceGroup: project_rg
+  aksCluster: aks-demo-cluster
 
 stages:
 - stage: Build
@@ -29,18 +34,12 @@ stages:
         tags: |
           $(tag)
 
-trigger:
-  - main
 
 pool:
   vmImage: 'ubuntu-latest'
 
-variables:
-  acrName: aksdemoregistrygreen231
-  imageName: user-service
-  tag: $(Build.BuildId)
-  resourceGroup: project_rg
-  aksCluster: aks-demo-cluster
+
+
 
 stages:
 
