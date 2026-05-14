@@ -30,4 +30,4 @@ def metrics():
 
 @app.get("/")
 def root():
-    return "Project 1 is Completed !!"
+    return "Project 1 is Completed!!!"
