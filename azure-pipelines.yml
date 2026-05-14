@@ -33,7 +33,7 @@ stages:
           az acr login --name $(acrName)
 
           echo "Building Docker image..."
-          docker build -t $(acrName).azurecr.io/$(imageName):$(tag) -f services/user-service/Dockerfile .
+          docker build -t $(acrName).azurecr.io/$(imageName):$(tag) -f services/user-service/Dockerfile services/user-service
 
           echo "Pushing Docker image..."
           docker push $(acrName).azurecr.io/$(imageName):$(tag)
