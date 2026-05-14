@@ -1,5 +1,5 @@
-service:
-  type: LoadBalancer
-  port: 80
-  targetPort: 3000
-
+grafana:
+  service:
+    type: LoadBalancer
+    port: 80
+    targetPort: 3000
