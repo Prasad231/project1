@@ -80,6 +80,6 @@ stages:
         echo "Installing kube-prometheus-stack..."
         helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
           -n monitoring \
-          -f grafana-values.yaml \
+          -f helm/user-service/grafana-values.yaml \
           --create-namespace
       displayName: Deploy Monitoring
