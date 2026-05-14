@@ -70,6 +70,14 @@ stages:
 
     # ✅ Deploy GRAFANA + PROMETHEUS
     - script: |
+    
+        echo "Adding Helm repository..."
+        helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+
+        echo "Updating repo..."
+        helm repo update
+        
+        echo "Installing kube-prometheus-stack..."
         helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
           -n monitoring \
           -f grafana-values.yaml \
