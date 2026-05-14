@@ -1,63 +1,83 @@
-trigger: none
-pr: none
+
+# Docker
+# Build a Docker image
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- main
+
+resources:
+- repo: self
+
+variables:
+  tag: '$(Build.BuildId)'
+
+stages:
+- stage: Build
+  displayName: Build image
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: Docker@2
+      displayName: Build an image
+      inputs:
+        command: build
+        dockerfile: '$(Build.SourcesDirectory)/services/user-service/Dockerfile'
+        tags: |
+          $(tag)
+
+trigger:
+  - main
 
 pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  workingDir: terraform
+  acrName: aksdemoregistrygreen231
+  imageName: user-service
+  tag: $(Build.BuildId)
+  resourceGroup: project_rg
+  aksCluster: aks-demo-cluster
 
 stages:
-- stage: Terraform
-  displayName: "Terraform Infra Deployment"
 
+# ✅ Build & Push Docker Image
+- stage: Build
   jobs:
-  - job: TerraformJob
-    displayName: "Run Terraform"
-    steps:
+    - job: BuildImage
+      steps:
 
-    # ✅ Install Terraform (safe method)
-    - script: |
-        echo "Downloading Terraform..."
-        wget https://releases.hashicorp.com/terraform/1.5.0/terraform_1.5.0_linux_amd64.zip -O /tmp/terraform.zip
+        - task: Docker@2
+          displayName: Build and Push Image
+          inputs:
+            containerRegistry: 'ACR-SERVICE-CONNECTION'
+            repository: $(imageName)
+            command: buildAndPush
+            Dockerfile: services/user-service/Dockerfile
+            tags: |
+              $(tag)
 
-        echo "Extracting Terraform..."
-        mkdir -p /tmp/terraform-bin
-        unzip -o /tmp/terraform.zip -d /tmp/terraform-bin
+# ✅ Deploy to AKS
+- stage: Deploy
+  dependsOn: Build
+  jobs:
+    - job: DeployToAKS
+      steps:
 
-        chmod +x /tmp/terraform-bin/terraform
+        - task: Kubernetes@1
+          inputs:
+            connectionType: 'Azure Resource Manager'
+            azureSubscriptionEndpoint: 'AZURE-SERVICE-CONNECTION'
+            azureResourceGroup: $(resourceGroup)
+            kubernetesCluster: $(aksCluster)
+            command: login
 
-        echo "Terraform version:"
-        /tmp/terraform-bin/terraform -version
-      displayName: "Install Terraform"
-
-    # ✅ Run Terraform inside AzureCLI (this solves auth issue)
-    - task: AzureCLI@2
-      displayName: "Run Terraform (Init + Plan + Apply)"
-      inputs:
-        azureSubscription: 'AZURE-SERVICE-CONNECTION'
-        scriptType: bash
-        scriptLocation: inlineScript
-        addSpnToEnvironment: true
-        inlineScript: |
-          echo "Switching to Terraform directory..."
-          cd $(workingDir)
-
-          echo "Setting Terraform Service Principal authentication..."
-
-          export ARM_CLIENT_ID=$servicePrincipalId
-          export ARM_CLIENT_SECRET=$servicePrincipalKey
-          export ARM_TENANT_ID=$tenantId
-          export ARM_SUBSCRIPTION_ID=$(az account show --query id -o tsv)
-
-          echo "Running Terraform Init..."
-          /tmp/terraform-bin/terraform init
-          echo "Running Terraform Destroy..."
-          /tmp/terraform-bin/terraform destroy -auto-approve
-
-         # echo "Running Terraform Plan..."
-         # /tmp/terraform-bin/terraform plan -out=tfplan
-
-         #  echo "Running Terraform Apply..."
-         #  /tmp/terraform-bin/terraform apply -auto-approve tfplan
+        - script: |
+            helm upgrade --install user-service ./helm/user-service \
+              --set image.repository=$(acrName).azurecr.io/user-service \
+              --set image.tag=$(tag)
+          displayName: Deploy via Helm
 
