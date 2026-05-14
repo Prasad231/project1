@@ -30,7 +30,4 @@ def metrics():
 
 @app.get("/")
 def root():
-    return {
-        "service": "user-service",
-        "status": "running"
-    }
+    return "Project 1 is Completed !!"
