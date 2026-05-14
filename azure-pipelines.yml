@@ -22,15 +22,21 @@ stages:
   - job: BuildImage
     steps:
 
-    - task: Docker@2
-      displayName: Build and Push Image
+    - task: AzureCLI@2
+      displayName: Login to ACR + Build + Push
       inputs:
-        containerRegistry: 'ACR-SERVICE-CONNECTION'
-        repository: $(imageName)
-        command: buildAndPush
-        Dockerfile: services/user-service/Dockerfile
-        tags: |
-          $(tag)
+        azureSubscription: 'AZURE-SERVICE-CONNECTION'
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          echo "Logging into ACR..."
+          az acr login --name $(acrName)
+
+          echo "Building Docker image..."
+          docker build -t $(acrName).azurecr.io/$(imageName):$(tag) -f services/user-service/Dockerfile .
+
+          echo "Pushing Docker image..."
+          docker push $(acrName).azurecr.io/$(imageName):$(tag)
 
 # =========================================
 # ✅ STAGE 2: DEPLOY TO AKS
