@@ -3,7 +3,7 @@ variable "location" {
 }
 
 variable "resource_group_name" {
-  default = "project_rg"
+  default = "project1_rg"
 }
 
 variable "aks_cluster_name" {
